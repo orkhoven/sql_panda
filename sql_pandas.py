@@ -60,7 +60,7 @@ def render_progress_bar(return_html=False):
 
 
 def save_progress_image(student_name):
-    """Generate a progress bar image (Pillow, no Chrome dependency)."""
+    """Generate a progress bar image (Pillow)."""
     width = 400
     height = 40
     step_width = width // len(st.session_state.status)
@@ -83,7 +83,7 @@ def save_progress_image(student_name):
 
 
 def upload_to_github(file_path, repo, token, commit_msg=None):
-    """Push file to GitHub repository using REST API."""
+    """Push file to GitHub repository using REST API and display debug info."""
     filename = file_path.split("/")[-1]
     api_url = f"https://api.github.com/repos/{repo}/contents/submissions/{filename}"
 
@@ -96,6 +96,11 @@ def upload_to_github(file_path, repo, token, commit_msg=None):
         "content": content,
     }
     resp = requests.put(api_url, headers=headers, json=data)
+
+    if resp.status_code not in [200, 201]:
+        st.error(f"Erreur GitHub ({resp.status_code}): {resp.text}")
+    else:
+        st.info(f"✅ Fichier envoyé: {filename}")
     return resp.status_code
 
 
@@ -225,12 +230,11 @@ if all(s in ["solved", "skipped"] for s in st.session_state.status):
             answers_file = f"{name.strip().replace(' ', '_')}_answers.csv"
             answers_df.to_csv(answers_file, index=False)
 
-            # 3. Envoi sur GitHub
+            # 3. Envoi sur GitHub avec vérification
             token = st.secrets["GITHUB_TOKEN"]
-            repo = "orkhoven/sql_panda"
+            repo = "orkhoven/sql_panda"  # Confirm exact repo name
+            st.info("Envoi des fichiers sur GitHub...")
             upload_to_github(img_file, repo, token, f"Progress for {name}")
             upload_to_github(answers_file, repo, token, f"Answers for {name}")
-
-            st.success("Votre progression et vos réponses ont été envoyées avec succès.")
         else:
             st.error("Veuillez saisir votre nom avant d’envoyer.")
