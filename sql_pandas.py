@@ -1,3 +1,5 @@
+pip install pandasql
+
 import pandas as pd
 from pandasql import sqldf
 import streamlit as st
