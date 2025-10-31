@@ -5,15 +5,15 @@ from pandasql import sqldf
 import streamlit as st
 
 # === Configuration ===
-st.set_page_config(page_title="SQL sur pandas (pandasql) — Exercices", layout="wide")
+st.set_page_config(page_title="Utiliser SQL et pandas ensemble", layout="wide")
 
 # === Données ===
 penguins = sns.load_dataset("penguins")
 pysqldf = lambda q: sqldf(q, globals())
 
 # === En-tête ===
-st.title("SQL sur pandas avec pandasql — Parcours d’exercices (Penguins)")
-st.caption("Tapez vos requêtes SQL. Si le résultat est correct, l’exercice suivant se débloque. Si vous affichez la solution, l’exercice restera marqué en orange.")
+st.title("Apprendre SQL et pandas ensemble — pandasql sur le jeu de données Penguins")
+st.caption("Chaque exercice propose une requête SQL et son équivalent en pandas, inspiré du tutoriel DataCamp.")
 
 # Aperçu du jeu de données
 with st.expander("Aperçu du jeu de données"):
@@ -43,56 +43,61 @@ def result_equals(a: pd.DataFrame, b: pd.DataFrame) -> bool:
         return False
 
 
-# === Banque d’exercices ===
+# === Exercices SQL + pandas ===
 EXOS = [
-    {"titre": "Exercice 1 — Afficher toutes les colonnes et les lignes (avec une limite).",
-     "enonce": "Afficher 5 premières lignes de la table penguins.",
-     "solution": "SELECT * FROM penguins LIMIT 5"},
-    {"titre": "Exercice 2 — Extraire les valeurs uniques d’une colonne.",
-     "enonce": "Lister les espèces uniques.",
-     "solution": "SELECT DISTINCT species FROM penguins"},
-    {"titre": "Exercice 3 — Sélectionner des colonnes spécifiques.",
-     "enonce": "Afficher species, island, bill_length_mm (limiter à 5 lignes).",
-     "solution": "SELECT species, island, bill_length_mm FROM penguins LIMIT 5"},
-    {"titre": "Exercice 4 — Filtrer avec WHERE (conditions multiples).",
-     "enonce": "Afficher les lignes où sex = 'Male' ET flipper_length_mm > 210.",
-     "solution": "SELECT * FROM penguins WHERE sex = 'Male' AND flipper_length_mm > 210"},
-    {"titre": "Exercice 5 — Agrégation et GROUP BY.",
-     "enonce": "Calculer, par espèce, la longueur de bec maximale (bill_length_mm).",
-     "solution": "SELECT species, MAX(bill_length_mm) AS max_bill FROM penguins GROUP BY species"},
-    {"titre": "Exercice 6 — Expression arithmétique + alias + tri + limite.",
-     "enonce": "Calculer le ratio bill_length_mm / bill_depth_mm, l’appeler ratio, trier décroissant et afficher 5 premières lignes.",
-     "solution": "SELECT bill_length_mm / bill_depth_mm AS ratio FROM penguins ORDER BY ratio DESC LIMIT 5"},
-    {"titre": "Exercice 7 — Moyenne par île.",
-     "enonce": "Calculer la longueur moyenne des nageoires (flipper_length_mm) par île.",
-     "solution": "SELECT island, AVG(flipper_length_mm) AS avg_flipper FROM penguins GROUP BY island"},
-    {"titre": "Exercice 8 — Comptage par espèce et sexe (exclure les NULL).",
-     "enonce": "Compter le nombre de lignes par species et sex, en excluant sex NULL. Ordonner par species, sex.",
-     "solution": "SELECT species, sex, COUNT(*) AS n FROM penguins WHERE sex IS NOT NULL GROUP BY species, sex ORDER BY species, sex"},
-    {"titre": "Exercice 9 — Filtre intervalle (BETWEEN).",
-     "enonce": "Afficher les lignes où bill_length_mm est entre 40 et 50 (inclus).",
-     "solution": "SELECT * FROM penguins WHERE bill_length_mm BETWEEN 40 AND 50"},
-    {"titre": "Exercice 10 — Tri décroissant et limite.",
-     "enonce": "Afficher les 10 lignes avec les bill_length_mm les plus élevés.",
-     "solution": "SELECT * FROM penguins ORDER BY bill_length_mm DESC LIMIT 10"},
+    {
+        "titre": "Exercice 1 — Aperçu du jeu de données",
+        "enonce": "Afficher les 5 premières lignes de la table penguins.",
+        "solution_sql": "SELECT * FROM penguins LIMIT 5",
+        "solution_pandas": "penguins.head()",
+    },
+    {
+        "titre": "Exercice 2 — Valeurs uniques d’une colonne",
+        "enonce": "Lister les espèces uniques dans la colonne species.",
+        "solution_sql": "SELECT DISTINCT species FROM penguins",
+        "solution_pandas": "penguins['species'].unique()",
+    },
+    {
+        "titre": "Exercice 3 — Sélection de colonnes",
+        "enonce": "Afficher species, island et bill_length_mm pour les 5 premières lignes.",
+        "solution_sql": "SELECT species, island, bill_length_mm FROM penguins LIMIT 5",
+        "solution_pandas": "penguins[['species','island','bill_length_mm']].head()",
+    },
+    {
+        "titre": "Exercice 4 — Filtrer des lignes",
+        "enonce": "Afficher les lignes où sex = 'Male' et flipper_length_mm > 210.",
+        "solution_sql": "SELECT * FROM penguins WHERE sex = 'Male' AND flipper_length_mm > 210",
+        "solution_pandas": "penguins[(penguins['sex']=='Male') & (penguins['flipper_length_mm']>210)]",
+    },
+    {
+        "titre": "Exercice 5 — Agrégation par groupe",
+        "enonce": "Afficher la longueur de bec maximale (bill_length_mm) par espèce.",
+        "solution_sql": "SELECT species, MAX(bill_length_mm) AS max_bill FROM penguins GROUP BY species",
+        "solution_pandas": "penguins.groupby('species', as_index=False)['bill_length_mm'].max()",
+    },
+    {
+        "titre": "Exercice 6 — Expression arithmétique et tri",
+        "enonce": "Calculer le ratio bill_length_mm / bill_depth_mm, trier décroissant et afficher 5 lignes.",
+        "solution_sql": "SELECT bill_length_mm / bill_depth_mm AS ratio FROM penguins ORDER BY ratio DESC LIMIT 5",
+        "solution_pandas": "penguins.assign(ratio = penguins['bill_length_mm']/penguins['bill_depth_mm']).sort_values('ratio', ascending=False).head()",
+    },
 ]
 
-# === État de progression ===
+# === État ===
 if "status" not in st.session_state:
-    st.session_state.status = ["locked"] * len(EXOS)  # locked / solved / skipped
+    st.session_state.status = ["locked"] * len(EXOS)
     st.session_state.step = 0
 
 step = st.session_state.step
 total = len(EXOS)
 
-
-# === Barre de progression personnalisée ===
+# === Barre de progression ===
 def render_progress_bar():
     html = '<div style="display:flex;gap:4px;margin:10px 0;">'
     for s in st.session_state.status:
-        color = "#ccc"  # default grey
+        color = "#ccc"
         if s == "solved":
-            color = "#2ecc71"  # green
+            color = "#2ecc71"  # vert
         elif s == "skipped":
             color = "#e67e22"  # orange
         html += f'<div style="flex:1;height:20px;background-color:{color};border-radius:3px;"></div>'
@@ -107,7 +112,7 @@ exo = EXOS[step]
 st.subheader(exo["titre"])
 st.markdown(f"**Consigne :** {exo['enonce']}")
 
-expected_df = pysqldf(exo["solution"])
+expected_df = pysqldf(exo["solution_sql"])
 
 sql_user = st.text_area(
     "Votre requête SQL :",
@@ -128,11 +133,12 @@ if show_schema:
     st.write("Colonnes disponibles :", list(penguins.columns))
 
 if give_up:
-    # Mark permanently as skipped unless it was already solved
     if st.session_state.status[step] != "solved":
         st.session_state.status[step] = "skipped"
     st.info("Solution attendue :")
-    st.code(exo["solution"], language="sql")
+    st.code(exo["solution_sql"], language="sql")
+    st.write("Équivalent pandas :")
+    st.code(exo["solution_pandas"], language="python")
     st.write("Résultat attendu :")
     st.dataframe(expected_df)
     render_progress_bar()
@@ -144,16 +150,19 @@ if run:
         else:
             user_df = pysqldf(sql_user)
             if result_equals(user_df, expected_df):
-                # Only mark green if not previously skipped
                 if st.session_state.status[step] != "skipped":
                     st.session_state.status[step] = "solved"
-                st.success("Correct. Exercice validé.")
+                st.success("Résultat correct. Exercice validé.")
                 st.dataframe(user_df)
+
+                st.markdown("**Équivalent pandas pour comparaison :**")
+                st.code(exo["solution_pandas"], language="python")
+
                 if st.session_state.step < total - 1:
                     st.session_state.step += 1
                     st.rerun()
                 else:
-                    st.write("Parcours terminé.")
+                    st.write("Tous les exercices sont terminés.")
                     render_progress_bar()
             else:
                 st.error("Résultat incorrect. Réessayez.")
