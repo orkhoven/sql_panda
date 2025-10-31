@@ -3,9 +3,8 @@ import numpy as np
 import seaborn as sns
 import streamlit as st
 from pandasql import sqldf
-import base64, requests, io
-from PIL import Image
-from html2image import Html2Image
+import base64, requests
+from PIL import Image, ImageDraw
 
 # === CONFIGURATION ===
 st.set_page_config(page_title="Apprendre SQL via pandasql", layout="wide")
@@ -61,11 +60,25 @@ def render_progress_bar(return_html=False):
 
 
 def save_progress_image(student_name):
-    """Capture the HTML progress bar as an image."""
-    hti = Html2Image()
-    html_str = render_progress_bar(return_html=True)
+    """Generate a progress bar image (Pillow, no Chrome dependency)."""
+    width = 400
+    height = 40
+    step_width = width // len(st.session_state.status)
+    bar = Image.new("RGB", (width, height), "white")
+    draw = ImageDraw.Draw(bar)
+
+    for i, status in enumerate(st.session_state.status):
+        color = "#cccccc"
+        if status == "solved":
+            color = "#2ecc71"
+        elif status == "skipped":
+            color = "#e67e22"
+        x0 = i * step_width
+        x1 = (i + 1) * step_width - 2
+        draw.rectangle([x0, 0, x1, height], fill=color, outline="black")
+
     output_file = f"{student_name}_progress.png"
-    hti.screenshot(html_str=html_str, save_as=output_file)
+    bar.save(output_file)
     return output_file
 
 
@@ -120,6 +133,7 @@ EXOS = [
      "solution_code": 'sqldf("SELECT * FROM penguins ORDER BY bill_length_mm DESC LIMIT 10")'}
 ]
 
+
 # === ÉTAT ===
 if "status" not in st.session_state:
     st.session_state.status = ["locked"] * len(EXOS)
@@ -141,7 +155,7 @@ expected = eval(exo["solution_code"])
 user_code = st.text_area(
     "Écrivez votre code Python ci-dessous (utilisez pandasql) :",
     height=150,
-    placeholder="Par exemple : sqldf('SELECT XXX FROM XXX')",
+    placeholder="Par exemple : sqldf('SELECT XXX FROM penguins')",
     key=f"code_{step}",
     value=st.session_state.inputs[step],
 )
@@ -155,7 +169,7 @@ with c3:
     give_up = st.button("Je bloque — voir la solution")
 
 if show_hint:
-    st.info("Rappel : utilisez `from pandasql import sqldf` puis `sqldf('SELECT ... FROM penguins')`")
+    st.info("Rappel : utilisez pandasql `sqldf('SELECT ... FROM penguins')`")
 
 if give_up:
     if st.session_state.status[step] != "solved":
@@ -199,7 +213,7 @@ if all(s in ["solved", "skipped"] for s in st.session_state.status):
     name = st.text_input("Entrez votre nom complet :")
     if st.button("Envoyer à l’enseignant"):
         if name.strip():
-            # 1. Sauvegarde du screenshot
+            # 1. Sauvegarde du screenshot (Pillow)
             img_file = save_progress_image(name.strip().replace(" ", "_"))
 
             # 2. Sauvegarde des réponses
@@ -212,8 +226,8 @@ if all(s in ["solved", "skipped"] for s in st.session_state.status):
             answers_df.to_csv(answers_file, index=False)
 
             # 3. Envoi sur GitHub
-            token = st.secrets["GITHUB_TOKEN"]  # Set this in Streamlit Cloud
-            repo = "orkhoven/sql_panda"  # your repo name
+            token = st.secrets["GITHUB_TOKEN"]
+            repo = "orkhoven/sql_panda"
             upload_to_github(img_file, repo, token, f"Progress for {name}")
             upload_to_github(answers_file, repo, token, f"Answers for {name}")
 
