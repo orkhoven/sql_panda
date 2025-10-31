@@ -4,49 +4,46 @@ import seaborn as sns
 from pandasql import sqldf
 import streamlit as st
 
-# --- Config ---
+# === Configuration ===
 st.set_page_config(page_title="SQL sur pandas (pandasql) — Exercices", layout="wide")
 
-# --- Données (comme dans le tuto DataCamp) ---
+# === Données ===
 penguins = sns.load_dataset("penguins")  # table logique : 'penguins'
 pysqldf = lambda q: sqldf(q, globals())
 
-# --- UI d’en-tête ---
+# === En-tête ===
 st.title("SQL sur pandas avec pandasql — Parcours d’exercices (Penguins)")
 st.caption("Tapez vos requêtes SQL. Si le résultat est correct, l’exercice suivant se débloque.")
 
+# Aperçu du jeu de données
 with st.expander("Aperçu du jeu de données"):
     st.dataframe(penguins.head())
+
 with st.expander("Schéma (colonnes et types)"):
     st.write(penguins.dtypes)
 
-# --- Outil de comparaison robuste (ordre, index, flottants) ---
+
+# === Fonctions utilitaires ===
 def _normalize(df: pd.DataFrame) -> pd.DataFrame:
     if df is None:
         return df
     cdf = df.copy()
-    # normaliser types numériques (arrondir pour éviter bruits flottants)
     for c in cdf.columns:
         if np.issubdtype(cdf[c].dtype, np.floating):
             cdf[c] = cdf[c].round(6)
-    # trier colonnes par nom et lignes par toutes colonnes disponibles
     cdf = cdf.reindex(sorted(cdf.columns), axis=1)
-    sort_cols = list(cdf.columns)
-    # si aucune colonne (SELECT sans colonnes), garder tel quel
-    if len(sort_cols) > 0:
-        cdf = cdf.sort_values(by=sort_cols, kind="mergesort")
+    if len(cdf.columns) > 0:
+        cdf = cdf.sort_values(by=list(cdf.columns), kind="mergesort")
     return cdf.reset_index(drop=True)
 
 def result_equals(a: pd.DataFrame, b: pd.DataFrame) -> bool:
     try:
-        na, nb = _normalize(a), _normalize(b)
-        # gérer NaN==NaN
-        return na.equals(nb)
+        return _normalize(a).equals(_normalize(b))
     except Exception:
         return False
 
-# --- Banque d’exercices (proches de ceux du tutoriel DataCamp) ---
-# Remarque : les solutions sont en SQLite SQL (pandasql).
+
+# === Banque d’exercices ===
 EXOS = [
     {
         "titre": "Exercice 1 — Afficher toutes les colonnes et les lignes (avec une limite).",
@@ -100,14 +97,18 @@ EXOS = [
     },
 ]
 
-# --- État de progression ---
+# === Gestion de la progression ===
 if "step" not in st.session_state:
     st.session_state.step = 0  # index de l'exercice à afficher
 
-total = len(EXOS)
 step = st.session_state.step
+total = len(EXOS)
+progress_ratio = (step / total)
 
-# --- Boucle d'affichage : un seul exercice visible à la fois ---
+# === Barre de progression ===
+st.progress(progress_ratio, text=f"Progression : {step}/{total} exercices validés")
+
+# === Affichage de l'exercice courant ===
 exo = EXOS[step]
 st.subheader(exo["titre"])
 st.markdown(f"**Consigne :** {exo['enonce']}")
@@ -115,16 +116,16 @@ st.markdown(f"**Consigne :** {exo['enonce']}")
 # Résultat attendu (pré-calcul)
 expected_df = pysqldf(exo["solution"])
 
-# Zone de saisie en SQL
-default_placeholder = "Écrivez votre requête SQL ici. Utilisez le nom de table: penguins"
-# Proposer un squelette utile pour guider sans dévoiler la solution
-if step == 1:  # l'exercice DISTINCT du screenshot
-    default_placeholder = "SELECT DISTINCT species FROM penguins"
+# Zone de saisie SQL (aucune pré-réponse)
+sql_user = st.text_area(
+    "Votre requête SQL :",
+    height=160,
+    placeholder="Écrivez votre requête SQL ici (utilisez la table 'penguins')",
+    key=f"query_{step}"
+)
 
-sql_user = st.text_area("Votre requête SQL :", height=160, placeholder=default_placeholder, key=f"q_{step}")
-
-# Boutons d'action
-c1, c2, c3 = st.columns([1,1,1])
+# Boutons
+c1, c2, c3 = st.columns([1, 1, 1])
 with c1:
     run = st.button("Exécuter")
 with c2:
@@ -143,7 +144,6 @@ if give_up:
 
 if run:
     try:
-        # Exiger une requête SELECT uniquement
         if not sql_user.strip().lower().startswith("select"):
             st.error("Seules les requêtes SELECT sont autorisées.")
         else:
@@ -151,13 +151,12 @@ if run:
             if result_equals(user_df, expected_df):
                 st.success("✅ Correct. Exercice validé.")
                 st.dataframe(user_df)
-                # Débloquer l'exercice suivant si disponible
                 if st.session_state.step < total - 1:
                     st.session_state.step += 1
                     st.rerun()
                 else:
                     st.balloons()
-                    st.success("Parcours terminé. Bravo.")
+                    st.success("🎉 Parcours terminé. Bravo !")
             else:
                 st.error("❌ Résultat incorrect. Réessayez.")
                 with st.expander("Voir votre résultat"):
