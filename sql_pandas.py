@@ -9,8 +9,6 @@ st.set_page_config(page_title="Apprendre SQL via pandasql", layout="wide")
 
 # === Données ===
 penguins = sns.load_dataset("penguins")
-
-# === Helper function ===
 pysqldf = lambda q: sqldf(q, globals())
 
 # === En-tête ===
@@ -23,7 +21,8 @@ with st.expander("Aperçu du jeu de données"):
 with st.expander("Colonnes disponibles"):
     st.write(list(penguins.columns))
 
-# === Fonction de comparaison ===
+
+# === Fonctions utilitaires ===
 def normalize(df):
     if df is None:
         return df
@@ -61,17 +60,42 @@ EXOS = [
         "solution_code": 'sqldf("SELECT species, island, bill_length_mm FROM penguins LIMIT 5")'
     },
     {
-    "titre": "Exercice 4 — Filtres",
-    "enonce": "Afficher les lignes où `sex = 'Male'` et `flipper_length_mm > 210`.",
-    "solution_code": 'sqldf("SELECT * FROM penguins WHERE sex = \'Male\' AND flipper_length_mm > 210")'
+        "titre": "Exercice 4 — Filtres",
+        "enonce": "Afficher les lignes où `sex = \'Male\'` et `flipper_length_mm > 210`.",
+        "solution_code": 'sqldf("SELECT * FROM penguins WHERE sex = \'Male\' AND flipper_length_mm > 210")'
     },
-
     {
         "titre": "Exercice 5 — Agrégation",
         "enonce": "Afficher, par espèce, la longueur de bec maximale (`bill_length_mm`).",
         "solution_code": 'sqldf("SELECT species, MAX(bill_length_mm) AS max_bill FROM penguins GROUP BY species")'
     },
+    {
+        "titre": "Exercice 6 — Calcul et tri",
+        "enonce": "Calculer le ratio `bill_length_mm / bill_depth_mm`, le nommer `ratio`, trier par ordre décroissant et afficher 5 lignes.",
+        "solution_code": 'sqldf("SELECT bill_length_mm / bill_depth_mm AS ratio FROM penguins ORDER BY ratio DESC LIMIT 5")'
+    },
+    {
+        "titre": "Exercice 7 — Moyenne par île",
+        "enonce": "Afficher la longueur moyenne des nageoires (`flipper_length_mm`) par île.",
+        "solution_code": 'sqldf("SELECT island, AVG(flipper_length_mm) AS avg_flipper FROM penguins GROUP BY island")'
+    },
+    {
+        "titre": "Exercice 8 — Comptage par espèce et sexe",
+        "enonce": "Compter le nombre de lignes par `species` et `sex` en excluant les valeurs NULL.",
+        "solution_code": 'sqldf("SELECT species, sex, COUNT(*) AS n FROM penguins WHERE sex IS NOT NULL GROUP BY species, sex ORDER BY species, sex")'
+    },
+    {
+        "titre": "Exercice 9 — Filtre avec BETWEEN",
+        "enonce": "Afficher les lignes où `bill_length_mm` est entre 40 et 50 inclus.",
+        "solution_code": 'sqldf("SELECT * FROM penguins WHERE bill_length_mm BETWEEN 40 AND 50")'
+    },
+    {
+        "titre": "Exercice 10 — Tri décroissant et limite",
+        "enonce": "Afficher les 10 lignes ayant les plus grandes valeurs de `bill_length_mm`.",
+        "solution_code": 'sqldf("SELECT * FROM penguins ORDER BY bill_length_mm DESC LIMIT 10")'
+    },
 ]
+
 
 # === État ===
 if "status" not in st.session_state:
@@ -88,14 +112,15 @@ def render_progress_bar():
     for s in st.session_state.status:
         color = "#ccc"
         if s == "solved":
-            color = "#2ecc71"
+            color = "#2ecc71"  # vert
         elif s == "skipped":
-            color = "#e67e22"
+            color = "#e67e22"  # orange
         html += f'<div style="flex:1;height:20px;background-color:{color};border-radius:3px;"></div>'
     html += "</div>"
     st.markdown(html, unsafe_allow_html=True)
 
 render_progress_bar()
+
 
 # === Exercice courant ===
 exo = EXOS[step]
@@ -132,7 +157,6 @@ if give_up:
 
 if run:
     try:
-        # Évaluation du code utilisateur (sandbox local)
         local_env = {"penguins": penguins, "pd": pd, "sqldf": sqldf}
         result = eval(user_code, {}, local_env)
 
