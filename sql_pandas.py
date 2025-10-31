@@ -1,4 +1,4 @@
-pip install pandasql
+!pip install pandasql
 
 import pandas as pd
 from pandasql import sqldf
