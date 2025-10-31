@@ -3,31 +3,43 @@ import seaborn as sns
 from pandasql import sqldf
 import streamlit as st
 
-# SQL helper
-pysqldf = lambda q: sqldf(q, globals())
-
-# Load built-in penguins dataset
+# load dataset
 penguins = sns.load_dataset("penguins")
 
-# Streamlit UI
-st.title("SQL on pandas — Penguins Example")
+# helper for SQL
+pysqldf = lambda q: sqldf(q, globals())
 
-st.write("### Dataset preview")
+# Pre-compute correct answer for the question
+correct_query = """
+SELECT DISTINCT species
+FROM penguins
+WHERE sex = 'Male'
+  AND flipper_length_mm > 210
+"""
+correct_result = pysqldf(correct_query)
+
+# UI
+st.title("Interactive SQL on pandas (penguins)")
+
+st.write("Dataset preview:")
 st.dataframe(penguins.head())
 
-st.write("### Columns and types")
-st.write(penguins.dtypes)
+st.write("Task: Write an SQL query (using table name `penguins`) to list **distinct** species of male penguins with flipper_length_mm > 210.")
 
-query = st.text_area("Write your SQL query below (use table name: penguins):", 
-                     "SELECT species, island, bill_length_mm FROM penguins LIMIT 5", 
-                     height=150)
+user_query = st.text_area("Enter your SQL query:", height=150,
+                          value="SELECT ... FROM penguins WHERE sex = 'Male' AND flipper_length_mm > 210")
 
-if st.button("Run query"):
+if st.button("Submit answer"):
     try:
-        result = pysqldf(query)
-        st.write("### Query result")
-        st.dataframe(result)
-        csv = result.to_csv(index=False).encode("utf-8")
-        st.download_button("Download result as CSV", data=csv, file_name="result.csv", mime="text/csv")
+        user_result = pysqldf(user_query)
+        # compare results (simple approach)
+        if user_result.equals(correct_result):
+            st.success("✅ Correct result!")
+        else:
+            st.error("❌ Result does not match expected.")
+            st.write("Your result:")
+            st.dataframe(user_result)
+            st.write("Expected result:")
+            st.dataframe(correct_result)
     except Exception as e:
         st.error(f"Error executing query: {e}")
