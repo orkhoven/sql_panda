@@ -141,7 +141,7 @@ expected = eval(exo["solution_code"])
 user_code = st.text_area(
     "Écrivez votre code Python ci-dessous (utilisez pandasql) :",
     height=150,
-    placeholder="Par exemple : sqldf('SELECT DISTINCT species FROM penguins')",
+    placeholder="Par exemple : sqldf('SELECT XXX FROM XXX')",
     key=f"code_{step}",
     value=st.session_state.inputs[step],
 )
@@ -213,7 +213,7 @@ if all(s in ["solved", "skipped"] for s in st.session_state.status):
 
             # 3. Envoi sur GitHub
             token = st.secrets["GITHUB_TOKEN"]  # Set this in Streamlit Cloud
-            repo = "orkhoven/sql-pandas-students"  # your repo name
+            repo = "orkhoven/sql_panda"  # your repo name
             upload_to_github(img_file, repo, token, f"Progress for {name}")
             upload_to_github(answers_file, repo, token, f"Answers for {name}")
 
