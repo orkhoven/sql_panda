@@ -107,7 +107,7 @@ expected = eval(exo["solution_code"])
 user_code = st.text_area(
     "Écrivez votre code Python ci-dessous (utilisez pandasql) :",
     height=150,
-    placeholder="Par exemple : sqldf('SELECT DISTINCT species FROM penguins')",
+    placeholder="Par exemple : sqldf('SELECT XXX FROM penguins')",
     key=f"code_{step}",
     value=st.session_state.inputs[step],
 )
