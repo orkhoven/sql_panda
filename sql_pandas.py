@@ -13,7 +13,7 @@ pysqldf = lambda q: sqldf(q, globals())
 
 # === En-tête ===
 st.title("SQL sur pandas avec pandasql — Parcours d’exercices (Penguins)")
-st.caption("Tapez vos requêtes SQL. Si le résultat est correct, l’exercice suivant se débloque.")
+st.caption("Tapez vos requêtes SQL. Si le résultat est correct, l’exercice suivant se débloque. Si vous affichez la solution, l’exercice restera marqué en orange.")
 
 # Aperçu du jeu de données
 with st.expander("Aperçu du jeu de données"):
@@ -77,7 +77,7 @@ EXOS = [
      "solution": "SELECT * FROM penguins ORDER BY bill_length_mm DESC LIMIT 10"},
 ]
 
-# === Gestion de l'état ===
+# === État de progression ===
 if "status" not in st.session_state:
     st.session_state.status = ["locked"] * len(EXOS)  # locked / solved / skipped
     st.session_state.step = 0
@@ -89,8 +89,8 @@ total = len(EXOS)
 # === Barre de progression personnalisée ===
 def render_progress_bar():
     html = '<div style="display:flex;gap:4px;margin:10px 0;">'
-    for i, s in enumerate(st.session_state.status):
-        color = "#ccc"
+    for s in st.session_state.status:
+        color = "#ccc"  # default grey
         if s == "solved":
             color = "#2ecc71"  # green
         elif s == "skipped":
@@ -102,7 +102,7 @@ def render_progress_bar():
 render_progress_bar()
 
 
-# === Affichage de l'exercice courant ===
+# === Exercice courant ===
 exo = EXOS[step]
 st.subheader(exo["titre"])
 st.markdown(f"**Consigne :** {exo['enonce']}")
@@ -128,7 +128,9 @@ if show_schema:
     st.write("Colonnes disponibles :", list(penguins.columns))
 
 if give_up:
-    st.session_state.status[step] = "skipped"
+    # Mark permanently as skipped unless it was already solved
+    if st.session_state.status[step] != "solved":
+        st.session_state.status[step] = "skipped"
     st.info("Solution attendue :")
     st.code(exo["solution"], language="sql")
     st.write("Résultat attendu :")
@@ -142,14 +144,15 @@ if run:
         else:
             user_df = pysqldf(sql_user)
             if result_equals(user_df, expected_df):
+                # Only mark green if not previously skipped
+                if st.session_state.status[step] != "skipped":
+                    st.session_state.status[step] = "solved"
                 st.success("Correct. Exercice validé.")
                 st.dataframe(user_df)
-                st.session_state.status[step] = "solved"
                 if st.session_state.step < total - 1:
                     st.session_state.step += 1
                     st.rerun()
                 else:
-                    st.session_state.status[step] = "solved"
                     st.write("Parcours terminé.")
                     render_progress_bar()
             else:
