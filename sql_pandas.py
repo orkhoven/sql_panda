@@ -61,10 +61,11 @@ EXOS = [
         "solution_code": 'sqldf("SELECT species, island, bill_length_mm FROM penguins LIMIT 5")'
     },
     {
-        "titre": "Exercice 4 — Filtres",
-        "enonce": "Afficher les lignes où `sex = "Male"` et `flipper_length_mm > 210`.",
-        "solution_code": 'sqldf("SELECT * FROM penguins WHERE sex = \'Male\' AND flipper_length_mm > 210")'
+    "titre": "Exercice 4 — Filtres",
+    "enonce": "Afficher les lignes où `sex = 'Male'` et `flipper_length_mm > 210`.",
+    "solution_code": 'sqldf("SELECT * FROM penguins WHERE sex = \'Male\' AND flipper_length_mm > 210")'
     },
+
     {
         "titre": "Exercice 5 — Agrégation",
         "enonce": "Afficher, par espèce, la longueur de bec maximale (`bill_length_mm`).",
