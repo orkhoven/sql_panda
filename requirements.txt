@@ -2,3 +2,7 @@ streamlit
 pandas
 seaborn
 pandasql
+html2image
+requests
+Pillow
+
