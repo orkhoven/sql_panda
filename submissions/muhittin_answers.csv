@@ -1,0 +1,29 @@
+Exercice,Réponse,Statut
+Exercice 1 — Aperçu des données,"sqldf(""SELECT * FROM penguins LIMIT 5"")
+
+",skipped
+Exercice 2 — Valeurs uniques,"sqldf(""SELECT DISTINCT species FROM penguins"")",skipped
+Exercice 3 — Sélection de colonnes,"sqldf(""SELECT species, island, bill_length_mm FROM penguins LIMIT 5"")
+
+",skipped
+Exercice 4 — Filtres,"sqldf(""SELECT * FROM penguins WHERE sex = 'Male' AND flipper_length_mm > 210"")
+
+",skipped
+Exercice 5 — Agrégation,"sqldf(""SELECT species, MAX(bill_length_mm) AS max_bill FROM penguins GROUP BY species"")
+
+",skipped
+Exercice 6 — Calcul et tri,"sqldf(""SELECT bill_length_mm / bill_depth_mm AS ratio FROM penguins ORDER BY ratio DESC LIMIT 5"")
+
+",skipped
+Exercice 7 — Moyenne par île,"sqldf(""SELECT island, AVG(flipper_length_mm) AS avg_flipper FROM penguins GROUP BY island"")
+
+",skipped
+Exercice 8 — Comptage par espèce et sexe,"sqldf(""SELECT species, sex, COUNT(*) AS n FROM penguins WHERE sex IS NOT NULL GROUP BY species, sex ORDER BY species, sex"")
+
+",skipped
+Exercice 9 — Filtre avec BETWEEN,"sqldf(""SELECT * FROM penguins WHERE bill_length_mm BETWEEN 40 AND 50"")
+
+",skipped
+Exercice 10 — Tri décroissant et limite,"sqldf(""SELECT * FROM penguins ORDER BY bill_length_mm DESC LIMIT 10"")
+
+",skipped
