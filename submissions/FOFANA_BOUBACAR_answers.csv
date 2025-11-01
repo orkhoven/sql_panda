@@ -1,11 +1,21 @@
-Exercice,Réponse,Statut
-Exercice 1 — Aperçu des données,sqldf('SELECT * FROM penguins LIMIT 5'),solved
-Exercice 2 — Valeurs uniques,"sqldf(""SELECT DISTINCT species FROM penguins"")",solved
-Exercice 3 — Sélection de colonnes,"sqldf(""SELECT species, island, bill_length_mm FROM penguins LIMIT 5"")",solved
-Exercice 4 — Filtres,"sqldf(""SELECT * FROM penguins WHERE sex = \'Male\' AND flipper_length_mm > 210"")",solved
-Exercice 5 — Agrégation,"sqldf(""SELECT species, MAX(bill_length_mm) AS max_bill FROM penguins GROUP BY species"")",solved
-Exercice 6 — Calcul et tri,"sqldf(""SELECT bill_length_mm / bill_depth_mm AS ratio FROM penguins ORDER BY ratio DESC LIMIT 5"")",solved
-Exercice 7 — Moyenne par île,"sqldf(""SELECT island, AVG(flipper_length_mm) AS avg_flipper FROM penguins GROUP BY island"")",solved
-Exercice 8 — Comptage par espèce et sexe,"sqldf(""SELECT species, sex, COUNT(*) AS n FROM penguins WHERE sex IS NOT NULL GROUP BY species, sex ORDER BY species, sex"")",solved
-Exercice 9 — Filtre avec BETWEEN,"sqldf(""SELECT * FROM penguins WHERE bill_length_mm BETWEEN 40 AND 50"")",solved
-Exercice 10 — Tri décroissant et limite,"sqldf(""SELECT * FROM penguins ORDER BY bill_length_mm DESC LIMIT 10"")",solved
+Exercice,Question,Réponse,Statut
+1,Listez tous les titres de livres avec leur année de publication (triés par année croissante).,"select title, year from books order by year ASC;",solved
+2,"Affichez les films dont le genre est 'Sci-Fi' (titre, année).","select title, year from movies where genre='Sci-Fi';",solved
+3,"Affichez les livres dont la note est ≥ 4.5 (titre, auteur_id, note).","select title, author_id, rating from books where rating>=4.5 order by rating desc;",solved
+4,"Affichez les films sortis entre 2015 et 2021 (titre, année, réalisateur_id).","select title, year, director_id from movies where year between 2015 and 2021;",solved
+5,Affichez les livres ayant entre 250 et 400 pages et une note > 4.0.,"select title, pages, rating from books where pages between 250 and 400 and rating>4.0;",solved
+6,Affichez les 5 films les mieux notés.,"select title, rating from movies order by rating desc  limit 5;",solved
+7,Affichez les livres de genre 'Drame' ou 'Romance'.,"select title, genre, year from books where genre in('Drame','Romance');",solved
+8,Affichez les films de genre 'Mystère' ou 'Thriller' avec note ≥ 7.0.,"select title, genre, rating FROM movies where genre IN('Mystère','Thriller') AND rating>=7.0;",solved
+9,Affichez les livres publiés avant 2010.,"select title, year from books where year<2010 order by year DESC;",solved
+10,Affichez les films dont la durée est entre 100 et 130 minutes.,"select title, duration_minutes, genre from movies where duration_minutes between 100 and 130;",solved
+11,Affichez les 3 livres les plus récents.,"select title, year from books order by year DESC LIMIT 3 ;",solved
+12,Affichez les livres avec une note < 4.0 ou moins de 250 pages.,"SELECT title, rating, pages FROM books WHERE rating<4.0 OR pages<250;",solved
+13,Affichez les films sortis en 2019 ou 2020.,"select title, year, rating from movies where year in(2019,2020);",solved
+14,"Affichez les livres écrits par les auteurs (id 1,3,5) avec note ≥ 4.0.","select title FROM books where author_id in(1,3,5) and rating>=4.0;",solved
+15,Affichez tous les films triés par genre puis par note décroissante.,"select * FROM movies order by genre ASC, rating DESC;",solved
+16,Listez tous les livres avec le nom et le pays de leur auteur.,"SELECT b.title,a.name,a.country FROM books b JOIN authors a ON a.id=b.author_id ;",solved
+17,Affichez tous les films et le nom de leur réalisateur (même si manquant).,"SELECT m.title,d.name FROM movies m LEFT JOIN directors d ON d.id=m.director_id;",solved
+18,"Pour chaque auteur, affichez le nombre de livres écrits (y compris 0).","SELECT a.name,COUNT(b.id) AS total FROM authors a LEFT JOIN books b ON b.author_id=a.id GROUP BY a.name;",solved
+19,"Pour chaque réalisateur, affichez la note moyenne de ses films.","select d.name,AVG(m.rating) AS moyenne_movies FROM directors d JOIN movies m ON m.director_id=d.id GROUP BY d.name;",solved
+20,"Par pays, affichez le nombre d’auteurs et de réalisateurs.",,locked
